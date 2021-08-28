@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>PROJET ADDOU, BAKKACH, EL AYEDI</title>
+
+	<!--BIBLIOTHERE DE BASE : LEAFLET-->
+	<link rel="stylesheet" href="libs/leaflet.css" /> 
+	<script src="libs/leaflet.js"></script>
+
+	<!--DRAW -->
+	<script src="libs/leaflet.draw-src.js"></script>
+	<link rel="stylesheet" href="libs/leaflet.draw.css"/>
+	<script src="libs/leaflet.draw.js"></script>
+
+	<!--Slide menu -->
+	<link rel="stylesheet" href="libs/slide_menu/SlideMenu.css"/>
+	<script src="libs/slide_menu/SlideMenu.js"></script>
+	<link rel="stylesheet" href="libs/font-awesome.min.css"/>
+
+	<!--Geocoder-->
+	<link rel="stylesheet" href="libs/Control.OSMGeocoder.css"/>
+	<script src="libs/Control.OSMGeocoder.js"></script>
+
+	<!--Overview -->
+	<link rel="stylesheet" href="libs/overview/MiniMap.css"/>
+	<script src="libs/overview/MiniMap.js"></script>
+
+	<!--Localisation-->
+	<link rel="stylesheet" href="libs/L.Control.Locate.min.css"/>
+	<script src="libs/L.Control.Locate.js"></script> 
+
+	<!--Mouse Position-->
+	<link rel="stylesheet" href="libs/L.Control.MousePosition.css"/>
+	<script src="libs/L.Control.MousePosition.js"></script>
+
+	<!--Navigation Bar -->
+	<link rel="stylesheet" href="libs/NavBar/NavBar.css"/>
+	<script src="libs/NavBar/NavBar.js"></script>
+
+	<!--Fonts-->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"/>
+	
+	<!--Jquery-->
+	<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+	<style>
+		body {
+			padding: 0;
+			margin: 0;
+		}
+		html,body, #map{
+			height: 100%;
+			width: 100%;
+		}
+	</style>
+
+</head>
+
+
+<body>
+	<div id="map"></div>
+	<script>
+		
+		/////FOND DE BASE
+		var OpenStreetMap = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+		var WorldImagery=L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+
+		///CONFIGURATION DE LA MAP
+		var map = L.map('map', {
+				layers: [OpenStreetMap], ///FOND DE BASE
+				center: [29.7076, -9.7333], ///COORDONNEES
+				zoom: 5 ///ZOOM PAR DEFAUT
+			});
+
+		///COUCHES DE BASE 
+		var baseLayers={
+			"Open Street Map":OpenStreetMap,
+			"World Imagery" :WorldImagery
+		};
+			///LAYERS A PARTIR  DE GEOSERVER (FORMAT WMS)
+		var Communes = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
+			layers: 'projet_maroc:Communes',
+			format: 'image/png',
+			transparent: true,
+			version: '1.1.0',
+			attribution:"myattribution"
+		});
+
+		var Nappes = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
+			layers:'projet_maroc:Nappes',
+			format:'image/png',
+			transparent:true,
+			version:'1.1.0',
+			attribution:"myattribution"
+		});
+		var REGION = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
+			layers:'projet_maroc:REGION',
+			format:'image/png',
+			transparent:true,
+			version:'1.1.0',
+			attribution:"myattribution"
+		});
+
+		var Retenues_Grands_Bge = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
+			layers:'projet_maroc:Retenues_Grands_Bge',
+			format:'image/png',
+			transparent:true,
+			version:'1.1.0',
+			attribution:"myattribution"
+		});
+		var Bassins_versants = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
+			layers:'projet_maroc:Bassins_versants',
+			format:'image/png',
+			transparent:true,
+			version:'1.1.0',
+			attribution:"myattribution"
+		});
+		var BARRAGES_T = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
+			layers:'projet_maroc:BARRAGES_T',
+			format:'image/png',
+			transparent:true,
+			version:'1.1.0',
+			attribution:"myattribution"
+		});
+		var Sbassins = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
+			layers:'projet_maroc:Sbassins',
+			format:'image/png',
+			transparent:true,
+			version:'1.1.0',
+			attribution:"myattribution"
+		});
+		var Ssbassins = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
+			layers:'projet_maroc:Ssbassins',
+			format:'image/png',
+			transparent:true,
+			version:'1.1.0',
+			attribution:"myattribution"
+		});
+
+
+		/// GROUPE LAYERS
+		var overlays={
+			"Communes":Communes,
+			"Nappes":Nappes,
+			"REGION": REGION,
+			"Retenues_Grands_Bge": Retenues_Grands_Bge,
+			"Bassins_versants":Bassins_versants,
+			"BARRAGES_T":BARRAGES_T,
+			"Sbassins":Sbassins,
+			"Ssbassins":Ssbassins
+		};
+
+		///RECHERCHE
+		var osmGeocoder=new L.Control.OSMGeocoder();
+		map.addControl(osmGeocoder);
+
+		///VU GENERAL
+		var osm2=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+		var miniMap = new L.Control.MiniMap(osm2, { toggleDisplay : true}).addTo(map);
+
+		///AJOUTER LE CONTRÔLE DE L'ÉCHELLE À LA CARTE
+		L.control.scale().addTo(map);
+
+		///AJOUTEZ LA BARRE DE NAVIGATION À LA CARTE
+		L.control.navbar({position : 'topleft'}).addTo(map);
+
+		///AJOUTER LE CONTRÔLE DU GEOLOCATE À LA CARTE
+		L.control.locate().addTo(map);
+
+
+		///AJOUTEZ LA POSITION DE LA SOURIS À LA CARTE
+		L.control.mousePosition().addTo(map);
+		///AJOUTEZ LA FONCTION DE TIRAGE À LA CARTE
+		var drawnItems=new L.FeatureGroup();
+		map.addLayer(drawnItems);
+
+		///SLIDE MENU
+
+		var div = L.DomUtil.create('div','info-legend');
+
+		var titre1='Communes';
+		contents1=div.innerHTML='<br><img src="http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&version=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=projet_maroc:Communes"</img><br>';
+
+		var titre2='REGION';
+		contents2=div.innerHTML='<br><img src="http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&version=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=projet_maroc:REGION"</img><br>';
+
+		var titre3='Nappes';
+		contents3=div.innerHTML='<br><img src="http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&version=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=projet_maroc:Nappes"</img><br>';
+
+		var titre4='Retenues_Grands_Bge';
+		contents4=div.innerHTML='<br><img src="http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&version=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=projet_maroc:Retenues_Grands_Bge"</img><br>';
+
+        var titre5='Retenues_Grands_Bge';
+		contents5=div.innerHTML='<br><img src="http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&version=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=projet_maroc:Retenues_Grands_Bge"</img><br>';
+
+        var titre6='Bassins_versants';
+		contents6=div.innerHTML='<br><img src="http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&version=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=projet_maroc:Bassins_versants"</img><br>';
+
+		var titre7='BARRAGES_T';
+		contents7=div.innerHTML='<br><img src="http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&version=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=projet_maroc:BARRAGES_T"</img><br>';
+
+		var titre8='Sbassins';
+		contents8=div.innerHTML='<br><img src="http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&version=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=projet_maroc:Sbassins"</img><br>';
+
+		var titre9='Ssbassins';
+		contents9=div.innerHTML='<br><img src="http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&version=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=projet_maroc:Ssbassins"</img><br>';
+		
+
+
+        var slideMenu = L.control.slideMenu('',{position:'topright', delay:'5'}).addTo(map);
+		slideMenu.setContents(titre1+contents1+titre2+contents2+titre3+contents3+titre4+contents4+titre5+contents5+titre6+contents6+titre7+contents7+titre8+contents8+titre9+contents9);
+
+		///Ajout des couches de base + couche geoserver
+		L.control.layers(baseLayers,overlays).addTo(map);
+	
+
+</script>
+
+
+</body>
+</html>
